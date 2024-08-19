@@ -8,13 +8,12 @@
     "mongodb": "^6.8.0"
   },
   "scripts": {
-    "start": "node server.js"
+    "start": "echo 'No start script required for Vercel deployments'",
+    "build": "echo 'No build step required'"
   },
-  "name": "node",
+  "name": "node-api",
   "version": "1.0.0",
-  "main": "server.js",
-  "keywords": [],
-  "author": "",
+  "main": "api/index.js",
   "license": "ISC",
-  "description": ""
+  "description": "A Node.js API deployed on Vercel"
 }
