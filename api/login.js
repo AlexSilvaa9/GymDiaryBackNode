@@ -1,27 +1,24 @@
-const { MongoClient } = require('mongodb');
+const { getUsersCollection } = require('./_db');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
-require('dotenv').config();
-
-let client;
-let usersCollection;
-
-async function connectToDatabase() {
-  if (!client) {
-    client = new MongoClient(process.env.MONGO_URI);
-    await client.connect();
-    const db = client.db('fit');
-    usersCollection = db.collection('users');
-  }
-}
 
 module.exports = async (req, res) => {
-  await connectToDatabase();
+  // Configuración CORS
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
+  res.setHeader('Access-Control-Allow-Headers', 'X-Requested-With, content-type');
+
+  if (req.method === 'OPTIONS') {
+    // Responder a solicitudes OPTIONS
+    res.status(200).end();
+    return;
+  }
 
   if (req.method === 'POST') {
     const { username, password } = req.body;
     if (!username || !password) return res.status(400).json({ message: 'Falta el campo username o password' });
 
+    const usersCollection = await getUsersCollection();
     const user = await usersCollection.findOne({ 'account.username': username });
     if (!user) return res.status(404).json({ message: 'Usuario no encontrado' });
 
