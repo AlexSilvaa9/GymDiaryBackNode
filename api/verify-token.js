@@ -1,10 +1,10 @@
 const { verifyToken } = require('./_db');
 
-module.exports = (req, res) => {
+module.exports = async (req, res) => {
   // Configuración CORS
   res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
-  res.setHeader('Access-Control-Allow-Headers', 'X-Requested-With, content-type');
+  res.setHeader('Access-Control-Allow-Methods', 'GET');
+  res.setHeader('Access-Control-Allow-Headers', 'Authorization');
 
   if (req.method === 'OPTIONS') {
     // Responder a solicitudes OPTIONS
@@ -13,9 +13,11 @@ module.exports = (req, res) => {
   }
 
   if (req.method === 'GET') {
-    if (verifyToken(req, res)) {
-      res.json({ message: 'Token válido', data: req.user });
+    if (!verifyToken(req, res)) {
+      return res.status(401).json({ message: 'Token no válido' });
     }
+
+    res.json({ message: 'Token válido', data: req.user });
   } else {
     res.status(405).json({ message: 'Método no permitido' });
   }

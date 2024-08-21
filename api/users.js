@@ -2,13 +2,11 @@ const { getUsersCollection } = require('./_db');
 const bcrypt = require('bcrypt');
 
 module.exports = async (req, res) => {
-  // Configuración CORS
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
-  res.setHeader('Access-Control-Allow-Headers', 'X-Requested-With, content-type');
+  res.setHeader('Access-Control-Allow-Headers', 'X-Requested-With, Content-Type, Authorization');
 
   if (req.method === 'OPTIONS') {
-    // Responder a solicitudes OPTIONS
     res.status(200).end();
     return;
   }

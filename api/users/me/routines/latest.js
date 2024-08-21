@@ -4,7 +4,7 @@ module.exports = async (req, res) => {
   // Configuración CORS
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
-  res.setHeader('Access-Control-Allow-Headers', 'X-Requested-With, content-type');
+  res.setHeader('Access-Control-Allow-Headers', 'X-Requested-With, Content-Type, Authorization');
 
   if (req.method === 'OPTIONS') {
     // Responder a solicitudes OPTIONS
@@ -12,23 +12,32 @@ module.exports = async (req, res) => {
     return;
   }
 
+  if (!verifyToken(req, res)) return;
+
+  const username = req.user.sub;
+  const usersCollection = await getUsersCollection();
+
   if (req.method === 'GET') {
-    if (!verifyToken(req, res)) return;
+    // Obtener las rutinas del usuario
+    const user = await usersCollection.findOne(
+      { 'account.username': username },
+      { projection: { routines: 1, _id: 0 } }
+    );
 
-    const username = req.user.sub;
+    if (!user || !user.routines || user.routines.length === 0) {
+      return res.status(404).json({ message: 'No se encontraron rutinas' });
+    }
 
-  const pipeline = [
-    { $match: { 'account.username': username } },
-    { $unwind: '$routines' },
-    { $sort: { 'routines.date': -1 } },
-    { $group: { _id: '$routines.name', latest_routine: { $first: '$routines' } } },
-    { $replaceRoot: { newRoot: '$latest_routine' } }
-  ];
+    // Encontrar la rutina más reciente
+    const latestRoutine = user.routines.reduce((latest, current) => 
+      (new Date(current.date) > new Date(latest.date) ? current : latest), 
+      user.routines[0]
+    );
 
-  const result = await usersCollection.aggregate(pipeline).toArray();
-  if (result.length > 0) {
-    res.json(result);
+    res.json(latestRoutine);
   } else {
-    res.status(404).json({ message: 'No se encontraron rutinas' });
+    // Manejo de métodos no permitidos
+    res.setHeader('Allow', 'GET');
+    res.status(405).json({ message: `Método ${req.method} no permitido` });
   }
-}};
+};
