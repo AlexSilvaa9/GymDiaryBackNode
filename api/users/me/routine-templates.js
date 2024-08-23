@@ -1,4 +1,4 @@
-const { getUsersCollection, verifyToken } = require('../../../_db');
+const { getUsersCollection, verifyToken } = require('../../_db');
 const { ObjectId } = require('mongodb');
 
 module.exports = async (req, res) => {
@@ -43,7 +43,7 @@ module.exports = async (req, res) => {
       }
     } else {
       // Añadir una nueva plantilla
-      templateData._id = new ObjectId().toString();
+      templateData._id = new ObjectId().toString(); // Asigna un nuevo ID único
       const result = await usersCollection.updateOne(
         { 'account.username': username },
         { $push: { routine_templates: templateData } }
@@ -64,9 +64,27 @@ module.exports = async (req, res) => {
       return res.status(404).json({ message: 'No se encontraron plantillas de rutina' });
     }
     res.json(user.routine_templates);
+  } else if (req.method === 'DELETE') {
+    // Eliminar una plantilla de rutina específica por nombre
+    const { name } = req.body; // Obtener el nombre de la plantilla a eliminar directamente de req.body
+
+    if (!name) {
+      return res.status(400).json({ message: 'Falta el nombre de la plantilla de rutina' });
+    }
+
+    const result = await usersCollection.updateOne(
+      { 'account.username': username },
+      { $pull: { routine_templates: { name } } }
+    );
+
+    if (result.modifiedCount > 0) {
+      res.json({ message: 'Plantilla de rutina eliminada correctamente' });
+    } else {
+      res.status(404).json({ message: 'No se encontró la plantilla de rutina para eliminar' });
+    }
   } else {
     // Manejo de métodos no permitidos
-    res.setHeader('Allow', 'POST, GET');
+    res.setHeader('Allow', 'POST, GET, DELETE');
     res.status(405).json({ message: `Método ${req.method} no permitido` });
   }
 };

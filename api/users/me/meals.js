@@ -34,6 +34,20 @@ module.exports = async (req, res) => {
     );
 
     res.json({ message: 'Comida añadida correctamente' });
+  } else if (req.method === 'DELETE') {
+    const { date, name } = req.body;
+    if (!date || !name) return res.status(400).json({ message: 'Faltan campos requeridos: fecha y nombre de la comida' });
+
+    const result = await usersCollection.updateOne(
+      { 'account.username': username },
+      { $pull: { nutrition_log: { date, name } } }
+    );
+
+    if (result.modifiedCount === 0) {
+      return res.status(404).json({ message: 'No se encontró la comida para eliminar' });
+    }
+
+    res.json({ message: 'Comida eliminada correctamente' });
   } else {
     res.status(405).json({ message: 'Método no permitido' });
   }

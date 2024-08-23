@@ -23,6 +23,8 @@ module.exports = async (req, res) => {
 
     if (await usersCollection.findOne({ 'account.username': account.username })) {
       return res.status(400).json({ message: 'El usuario ya existe' });
+    } else if (await usersCollection.findOne({ 'account.email': account.email })) {
+      return res.status(400).json({ message: 'El correo electrónico ya está registrado' });
     }
 
     newUser.metrics = newUser.metrics || [];
