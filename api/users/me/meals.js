@@ -26,7 +26,7 @@ module.exports = async (req, res) => {
     res.json(meals);
   } else if (req.method === 'POST') {
     const newMeal = req.body;
-    if (!newMeal.date || !newMeal.name || !newMeal.calories || !newMeal.macros) return res.status(400).json({ message: 'Faltan campos requeridos en la comida' });
+    if (!newMeal.date || !newMeal.name) return res.status(400).json({ message: 'Faltan campos requeridos en la comida' });
 
     await usersCollection.updateOne(
       { 'account.username': username },
